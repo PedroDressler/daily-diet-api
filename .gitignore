@@ -8,3 +8,7 @@ db/*.db
 build
 dist
 
+# Environment
+
+.env
+.env.test
