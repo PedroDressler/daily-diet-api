@@ -9,6 +9,5 @@ build
 dist
 
 # Environment
-
 .env
 .env.test
