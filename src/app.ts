@@ -1,7 +1,9 @@
 import fastify from 'fastify'
+import { usersRoutes } from './routes/user'
+import { mealsRoutes } from './routes/meals'
 
 export const app = fastify()
 
-app.get('/', async (request, reply) => {
-  return reply.status(200).send('GET /')
-})
+// Routes
+app.register(usersRoutes, { prefix: '/users' })
+app.register(mealsRoutes, { prefix: '/meals' })
