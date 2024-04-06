@@ -54,20 +54,20 @@ export async function usersRoutes(app: FastifyInstance) {
     return reply.status(201).send()
   })
 
-  app.post('/login', async (request, reply) => {
-    const { name, email } = userBodySchema.parse(request.body)
+  // app.post('/login', async (request, reply) => {
+  //   const { name, email } = userBodySchema.parse(request.body)
 
-    const userExists = await database('users').where({ name, email }).first()
+  //   const userExists = await database('users').where({ name, email }).first()
 
-    if (!userExists) {
-      return reply.status(404).send({ message: 'User does not exist!' })
-    }
+  //   if (!userExists) {
+  //     return reply.status(404).send({ message: 'User does not exist!' })
+  //   }
 
-    const sessionId = randomUUID()
+  //   const sessionId = randomUUID()
 
-    reply.setCookie('session_id', sessionId, {
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    })
-  })
+  //   reply.setCookie('session_id', sessionId, {
+  //     path: '/',
+  //     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  //   })
+  // })
 }
