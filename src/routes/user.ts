@@ -4,12 +4,15 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 
+export const prefix = '/users'
+
 export async function usersRoutes(app: FastifyInstance) {
-  const userBodySchema = z.object({
+  const createUserBodySchema = z.object({
     name: z.string(),
     email: z.string().email(),
   })
 
+  // GET /user
   app.get(
     '/',
     { preHandler: [checkIfSessionIdExists] },
@@ -24,8 +27,9 @@ export async function usersRoutes(app: FastifyInstance) {
     },
   )
 
+  // POST /user
   app.post('/', async (request, reply) => {
-    const { name, email } = userBodySchema.parse(request.body)
+    const { name, email } = createUserBodySchema.parse(request.body)
 
     const userByEmail = await database('users').where({ email }).first()
 
@@ -53,21 +57,6 @@ export async function usersRoutes(app: FastifyInstance) {
 
     return reply.status(201).send()
   })
-
-  app.post('/login', async (request, reply) => {
-    const { name, email } = userBodySchema.parse(request.body)
-
-    const userExists = await database('users').where({ name, email }).first()
-
-    if (!userExists) {
-      return reply.status(404).send({ message: 'User does not exist!' })
-    }
-
-    const sessionId = randomUUID()
-
-    reply.setCookie('sessionId', sessionId, {
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    })
-  })
 }
+
+export default { usersRoutes, prefix }
