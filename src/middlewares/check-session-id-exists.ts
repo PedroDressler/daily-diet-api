@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
+import { database } from '../database'
 
 export async function checkIfSessionIdExists(
   request: FastifyRequest,
@@ -11,4 +12,12 @@ export async function checkIfSessionIdExists(
       error: 'Unauthorized.',
     })
   }
+
+  const user = await database('users').where({ session_id: sessionId }).first()
+
+  if (!user) {
+    return reply.status(404).send('User not found!')
+  }
+
+  request.user = user
 }
