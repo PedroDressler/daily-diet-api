@@ -18,7 +18,7 @@ declare module 'knex/types/tables' {
       rating: number
       created_at: string
       updated_at: string
-      meal_date_time: string
+      date: string
       is_on_diet: boolean
     }
   }

@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('description')
     table.tinyint('rating').notNullable().defaultTo(0)
     table.timestamps(true, true)
-    table.timestamp('meal_date_time')
+    table.date('date').notNullable()
     table.boolean('is_on_diet').notNullable().defaultTo(false)
   })
 }
