@@ -11,7 +11,8 @@
     "knex": "node --no-warnings --import tsx ./node_modules/knex/bin/cli.js",
     "lint": "eslint src --ext .ts --fix",
     "build": "tsup src --out-dir build",
-    "test": "vitest"
+    "test": "vitest",
+    "restart": "npm run knex -- migrate:rollback --all && npm run knex -- migrate:latest"
   },
   "dependencies": {
     "@fastify/cookie": "^9.3.1",
