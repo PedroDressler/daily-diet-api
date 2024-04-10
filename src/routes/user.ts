@@ -6,7 +6,7 @@ import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export const prefix = '/users'
 
-export async function usersRoutes(app: FastifyInstance) {
+export async function handler(app: FastifyInstance) {
   const createUserBodySchema = z.object({
     name: z.string(),
     email: z.string().email(),
@@ -59,4 +59,4 @@ export async function usersRoutes(app: FastifyInstance) {
   })
 }
 
-export default { usersRoutes, prefix }
+export default { handler, prefix }
