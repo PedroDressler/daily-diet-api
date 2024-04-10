@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 
-export const prefix = '/users'
+export const options = { prefix: '/users' }
 
 export async function handler(app: FastifyInstance) {
   const createUserBodySchema = z.object({
@@ -59,4 +59,4 @@ export async function handler(app: FastifyInstance) {
   })
 }
 
-export default { handler, prefix }
+export default { handler, options }

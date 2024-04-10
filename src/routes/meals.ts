@@ -5,7 +5,7 @@ import { database } from '../database'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 import { randomUUID } from 'crypto'
 
-export const prefix = '/meals'
+export const options = { prefix: '/meals' }
 
 async function handler(app: FastifyInstance) {
   const createMealBodySchema = z.object({
@@ -39,4 +39,4 @@ async function handler(app: FastifyInstance) {
   )
 }
 
-export default { handler, prefix }
+export default { handler, options }
