@@ -1,11 +1,10 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-
 import { database } from '../database'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 import { randomUUID } from 'crypto'
 
-export const options = { prefix: '/meals' }
+const options = { prefix: '/meals' }
 
 async function handler(app: FastifyInstance) {
   const createMealBodySchema = z.object({
@@ -16,12 +15,36 @@ async function handler(app: FastifyInstance) {
     rating: z.number().optional(),
   })
 
+  // GET /meals
+  app.get(
+    '/',
+    { preHandler: [checkIfSessionIdExists] },
+    async (request, reply) => {
+      const id = request.user?.id
+
+      const userMeals = await database('meals')
+        .where('user_id', id)
+        .select(
+          'meals.id as meal_id',
+          'meals.name',
+          'meals.description',
+          'meals.date as meal_date',
+          'meals.is_on_diet',
+          'meals.rating',
+          'meals.created_at',
+          'meals.updated_at',
+        )
+
+      return reply.status(200).send({ user: request.user?.name, userMeals })
+    },
+  )
+
   // POST /meals
   app.post(
     '/',
     { preHandler: [checkIfSessionIdExists] },
     async (request, reply) => {
-      const { name, description, isOnDiet, rating } =
+      const { name, date, description, isOnDiet, rating } =
         createMealBodySchema.parse(request.body)
 
       const mealPostResponse = await database('meals').insert({
@@ -29,12 +52,14 @@ async function handler(app: FastifyInstance) {
         name,
         description,
         is_on_diet: isOnDiet,
-        // date: date.getTime(),
+        date: date.getTime(),
         user_id: request.user?.id,
         rating,
       })
 
-      return reply.status(201).send({ mealPostResponse })
+      return reply
+        .status(201)
+        .send({ message: 'Meal created', responseCode: mealPostResponse })
     },
   )
 }
