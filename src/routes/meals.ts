@@ -62,6 +62,28 @@ async function handler(app: FastifyInstance) {
         .send({ message: 'Meal created', responseCode: mealPostResponse })
     },
   )
+
+  app.delete(
+    '/:mealId',
+    { preHandler: [checkIfSessionIdExists] },
+    async (request, reply) => {
+      const paramsSchema = z.object({
+        mealId: z.string().uuid(),
+      })
+
+      const { mealId } = paramsSchema.parse(request.params)
+
+      const meal = await database('meals').where({ id: mealId })
+
+      if (!meal) {
+        return reply.status(404).send({ message: 'Meal not found!' })
+      }
+
+      await database('meals').where({ id: mealId }).del()
+
+      return reply.status(204).send({ message: 'Meal deleted successfully' })
+    },
+  )
 }
 
 export default { handler, options }
