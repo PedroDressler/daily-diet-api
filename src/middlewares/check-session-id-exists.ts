@@ -16,7 +16,7 @@ export async function checkIfSessionIdExists(
   const user = await database('users').where({ session_id: sessionId }).first()
 
   if (!user) {
-    return reply.status(404).send('User not found!')
+    return reply.status(404).send({ error: 'User not found.' })
   }
 
   request.user = user
