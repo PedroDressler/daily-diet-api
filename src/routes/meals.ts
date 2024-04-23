@@ -12,11 +12,28 @@ async function handler(app: FastifyInstance) {
   })
 
   // GET /meals
-  app.get('/', async (request, reply) => {
-    const id = request.user?.id
+  app.get('/:mealId?', async (request, reply) => {
+    interface Query {
+      user_id?: string
+      id?: string
+    }
+
+    const paramsSchema = z.object({
+      mealId: z.string().uuid().optional(),
+    })
+
+    const { mealId } = paramsSchema.parse(request.params)
+
+    const userId = request.user?.id
+
+    const query: Query = { user_id: userId }
+
+    if (mealId) {
+      query.id = mealId
+    }
 
     const userMeals = await database('meals')
-      .where('user_id', id)
+      .where(query)
       .select(
         'meals.id as meal_id',
         'meals.name',
@@ -38,13 +55,13 @@ async function handler(app: FastifyInstance) {
       description: z.string().default(''),
       date: z.coerce.date(),
       isOnDiet: z.boolean().default(false),
-      rating: z.number().optional(),
+      rating: z.number().default(0),
     })
 
     const { name, date, description, isOnDiet, rating } =
       createMealBodySchema.parse(request.body)
 
-    const mealPostResponse = await database('meals').insert({
+    await database('meals').insert({
       id: randomUUID(),
       name,
       description,
@@ -54,9 +71,7 @@ async function handler(app: FastifyInstance) {
       rating,
     })
 
-    return reply
-      .status(201)
-      .send({ message: 'Meal created', responseCode: mealPostResponse })
+    return reply.status(201).send()
   })
 
   // DELETE /meals/:mealId
@@ -67,7 +82,9 @@ async function handler(app: FastifyInstance) {
 
     const { mealId } = paramsSchema.parse(request.params)
 
-    const meal = await database('meals').where({ id: mealId })
+    const userId = request.user?.id
+
+    const meal = await database('meals').where({ id: mealId, user_id: userId })
 
     if (!meal) {
       return reply.status(404).send({ message: 'Meal not found!' })
@@ -88,14 +105,14 @@ async function handler(app: FastifyInstance) {
       rating: z.number(),
     })
 
-    const { name, description, date, isOnDiet, rating } =
-      updateMealBodySchema.parse(request.body)
-
     const paramsSchema = z.object({
       mealId: z.string().uuid(),
     })
 
     const { mealId } = paramsSchema.parse(request.params)
+
+    const { name, description, date, isOnDiet, rating } =
+      updateMealBodySchema.parse(request.body)
 
     const userId = request.user?.id
 
@@ -119,6 +136,55 @@ async function handler(app: FastifyInstance) {
     })
 
     return reply.status(204).send()
+  })
+
+  // GET /meals/metrics
+  app.get('/metrics', async (request, reply) => {
+    const totalMeals = await database('meals')
+      .where({
+        user_id: request.user?.id,
+      })
+      .orderBy('date', 'desc')
+
+    const offDietMeals = await database('meals')
+      .where({
+        user_id: request.user?.id,
+        is_on_diet: false,
+      })
+      .count('id', { as: 'total' })
+      .first()
+
+    const onDietMeals = await database('meals')
+      .where({
+        user_id: request.user?.id,
+        is_on_diet: true,
+      })
+      .count('id', { as: 'total' })
+      .first()
+
+    const { dietStreak } = totalMeals.reduce(
+      (acc, meal) => {
+        if (meal.is_on_diet) {
+          acc.currentStreak += 1
+        } else {
+          acc.currentStreak = 0
+        }
+
+        if (acc.currentStreak > acc.dietStreak) {
+          acc.dietStreak = acc.currentStreak
+        }
+
+        return acc
+      },
+      { dietStreak: 0, currentStreak: 0 },
+    )
+
+    return reply.send({
+      totalMeals: totalMeals.length,
+      totalMealsOnDiet: onDietMeals?.total,
+      totalMealsOffDiet: offDietMeals?.total,
+      dietStreak,
+    })
   })
 }
 
