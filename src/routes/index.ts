@@ -3,17 +3,18 @@ import { resolve } from 'node:path'
 import { z } from 'zod'
 import { FastifyInstance } from 'fastify'
 
+// Deprecated func
 export const indexRoute = async (app: FastifyInstance) => {
-  const files = readdirSync(resolve(__dirname)).filter(
-    (file) => !file.startsWith('index') && file.endsWith('.ts'),
-  )
-
   const createRouteParametersSchema = z.object({
     handler: z.function(),
     options: z.object({
-      prefix: z.string(),
+      prefix: z.string().optional(),
     }),
   })
+
+  const files = readdirSync(resolve(__dirname)).filter(
+    (file) => !file.startsWith('index') && file.endsWith('.ts'),
+  )
 
   for (const file of files) {
     const url = `./${file}`
@@ -23,6 +24,6 @@ export const indexRoute = async (app: FastifyInstance) => {
       routeModule.default,
     )
 
-    app.register(handler, options)
+    await app.register(handler, options)
   }
 }

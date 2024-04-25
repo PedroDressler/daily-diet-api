@@ -1,24 +1,15 @@
 import fastify from 'fastify'
-import { env } from './env'
 import cookie from '@fastify/cookie'
-import { indexRoute } from './routes'
+import users from './routes/users'
+import meals from './routes/meals'
 
-export const app = fastify()
+const app = fastify()
 
 // Plugins
 app.register(cookie)
 
-export async function startServer() {
-  await indexRoute(app)
-  await app.listen({ port: env.PORT, host: 'localhost' }).then(() => {
-    console.log('HTTP Server Running')
-  })
-}
+// Routes
+app.register(users.handler, users.options)
+app.register(meals.handler, meals.options)
 
-try {
-  startServer()
-} catch (err) {
-  app.log.error(err)
-
-  process.exit(1)
-}
+export { app }
