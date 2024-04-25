@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 
-const options = { prefix: '/users' }
+const options = { prefix: 'users' }
 
 async function handler(app: FastifyInstance) {
   const createUserBodySchema = z.object({
@@ -44,7 +44,7 @@ async function handler(app: FastifyInstance) {
 
       reply.setCookie('sessionId', sessionId, {
         path: '/',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 7, // 7 days
       })
     }
 

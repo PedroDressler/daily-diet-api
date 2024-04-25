@@ -4,7 +4,7 @@ import { database } from '../database'
 import { checkIfSessionIdExists } from '../middlewares/check-session-id-exists'
 import { randomUUID } from 'crypto'
 
-const options = { prefix: '/meals' }
+const options = { prefix: 'meals' }
 
 async function handler(app: FastifyInstance) {
   app.addHook('preHandler', async (request, reply) => {
